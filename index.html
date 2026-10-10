@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesquisa de Equipamentos | Soluções Químicas Jr.</title>
+<style>
+:root{--y:#F7B733;--c:#FDF6EC;--b:#04124F}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Segoe UI",Helvetica,Arial,sans-serif;background:var(--c);color:var(--b)}
+header{background:var(--b);padding:28px 20px 56px;text-align:center}
+header img{height:110px;max-width:80%;object-fit:contain}
+.wm{display:none;color:var(--c);font-weight:800;font-size:22px}
+header h1{color:var(--c);font-size:26px;margin-top:14px;letter-spacing:.5px}
+header h1 span{color:var(--y)}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+.search{display:flex;margin-top:-28px;background:#fff;border:3px solid var(--y)}
+.search input{flex:1;border:0;padding:16px;font-size:17px;color:var(--b);background:transparent;outline:0;min-width:0}
+.search button{border:0;background:var(--y);color:var(--b);font-weight:700;padding:0 20px;font-size:15px;cursor:pointer}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:18px 0 8px}
+.chip{flex:none;border:2px solid var(--b);background:transparent;color:var(--b);padding:6px 14px;font-weight:600;font-size:13px;cursor:pointer}
+.chip.on{background:var(--b);color:var(--c)}
+#count{font-size:14px;margin:8px 0 14px;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding-bottom:40px}
+.card{background:#fff;border-left:8px solid var(--y);padding:16px}
+.card h2{font-size:17px;line-height:1.25}
+.card .m{font-size:14px;margin-top:4px;opacity:.8}
+.tags{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+.tag{background:var(--b);color:var(--c);font-size:12px;font-weight:700;padding:3px 9px}
+.tag.y{background:var(--y);color:var(--b)}
+.row{font-size:13.5px;margin-top:4px}
+.row b{font-weight:700}
+.price{margin-top:12px;background:var(--c);padding:8px 10px;font-weight:800;font-size:15px}
+.empty{text-align:center;padding:50px 0;font-weight:600}
+footer{background:var(--b);color:var(--c);text-align:center;padding:18px;font-size:13px}
+mark{background:var(--y);color:var(--b);padding:0 1px}
+</style>
+</head>
+<body>
+<header>
+<img src="logo.png" alt="Soluções Químicas Jr." onerror="if(!this.dataset.t){this.dataset.t=1;this.src='https://squimicasjr.weebly.com/uploads/4/2/3/3/42337397/logo-branco-sem-fundo-vertical_2.png'}else{this.style.display='none';this.nextElementSibling.style.display='block'}">
+<div class="wm">Soluções Químicas Jr.</div>
+<h1>PESQUISA DE <span>EQUIPAMENTOS</span></h1>
+</header>
+<main class="wrap">
+<div class="search"><input id="q" type="search" placeholder="Busque por nome, marca, modelo, técnica, local ou responsável…" autocomplete="off"><button id="clr">Limpar</button></div>
+<div class="chips" id="chips"></div>
+<div id="count"></div>
+<div class="grid" id="grid"></div>
+</main>
+<footer>Soluções Químicas Jr. · Base de equipamentos e serviços</footer>
+<script>
+const R=["Adalgisa Rodrigues de Andrade","Ana Paula Ramos","Anderson Rodrigo Moraes de Oliveira","Andreia Machado Leopoldino","Antonio Claudio Tedesco","Antonio José da Costa Filho","Arthur H. Cavalcante de Oliveira","Bruno Spinosa de Martinis","Carem G Vargas Rechia","Carmen Lúcia Cardoso","Carolina Patrícia Aires Garbellini","Fernando Barbosa Jr.","Flavio da Silva Emery","Germán Gustavo Sgro","Gregoire Jean Francois Demets","Herenilton Paulino Oliveira","José Maurício Almeida Caiut","Juliana Cancino Bernardi","Lúcia Helena Faccioli","Luciane Carla Alberici","Luiz Alberto Beraldo de Moraes","Marcelo Firmino de Oliveira","Maria V. L. B. Bentley","Martin Eduardo Poletti","Norberto Peporine Lopes","Paulo Marcos Donate","Paulo Olivi","Pietro Ciancaglini","Priscyla D. Marcato Gaspari","Richard John Ward","Rodrigo Ferreira Silva","Rogéria Rocha Gonçalves","Sergio Akira Uyemura","Suely Vilela","Valdir Roberto Balbo"];
+// patrimônio|nome|marca|modelo|classificação|local|responsável(idx)|valor
+const D=`059.017146|Analisador Bioquímico|Shimadzu|TOC-VCPN|TOC|CAQRP|0|50,00 p/ amostra
+059.017153|Sistema de Cromatografia Gasosa|Shimadzu|GCMS-QP2010 Plus LC-20AT|GC-MS|CAQRP|0|25,00 p/ amostra
+059.030105|Sistema de Cromatografia|Metrohm|Compact IC Pro-Anion 881|IC|CAQRP|0|50,00 p/ amostra
+059.017424|Microscópio Eletrônico de Varredura|CARL ZEISS|EVO-50XVP-BU|MEV|CAQRP|0|100,00 p/ hora
+200.042786|Espectrômetro Raman Portátil|Ocean Optics Inc.|QUEPRO-RAMAN|Raman|CAQRP|1|15,00 p/ hora
+059.031191|Analisador de Tamanho e Potencial Zeta de Partículas|MALVERN INSTRUMENTS|ZEN 3601|DLS|CAQRP|1|15,00 p/ hora
+200.044402|Cuba de Langmuir|KSV|KSV Langmuir|Langmuir|CAQRP|1|15,00 p/ hora
+200.044409|Microscópio no Ângulo de Brewster|KSV|MicroBAM|BAM|CAQRP|1|15,00 p/ hora
+059.026147|Espectrofotômetro UV-Vis|HP|190-1100 nm|UV-Vis|CAQRP|1|15,00 p/ hora
+059.015537|Tensiômetro/Goniômetro Óptico|DATAPHYSICS|OCA20|Tensiometria Óptica|CAQRP|1|15,00 p/ hora
+059.031192|Esterilizador de Superfície por Plasma|Harrick|PDC-32G Basic|Esterilização|CAQRP|1|70,00 p/ unidade
+059.020563|Sistema para cromatografia líquida - detector de arranjo de diodos|Shimadzu|LC-6AD|HPLC-DAD|CAQRP|2|35,00 p/ amostra
+059.029624|Sistema para cromatografia líquida - detector de arranjo de diodos|Shimadzu|UFLC|UFLC-DAD|CAQRP|2|60,00 p/ amostra
+N/A|Eletroporador|Eppendorf|2510|Eletroporador|OncoMoT|3|10,00 p/ amostra
+12766|Luminômetro|Molecular Devices|SpectraMax L|Luminômetro|OncoMoT|3|50,00 p/ placa
+060.016108|Sistema de Cromatografia líquida|GE HealthCare|AKTA PURE 25L|FPLC|OncoMoT|3|100,00 p/ sessão
+200.106520|Analisador XFp Seahorse|Agilent|XFP|Analisador de Fluxo Extracelular|CNET|4|400,00 p/ placa
+200.106743|Analisador de RNA por fluorescência|THERMOFISHER|QUBIT|Fluorometria|CNET|4|25,00 p/ amostra
+200.106751|Analisador de quantidade de RNA e DNA|THERMOFISHER|NANODROP ONE C|UV-Vis de Microvolume|CNET|4|25,00 p/ amostra
+059.032895|Analisador de Tamanho de partículas e Potencial Zeta|MALVERN|ZetaSizer NanoZS 90|DLS / ELS|CNET|4|150,00 p/ hora
+200.106526|Análise de Tamanho de partículas e Potencial Zeta|IZON|qNANO|TRPS|CNET|4|350,00 p/ hora
+059.035211|BioImpressora 3D|GeSim|BioScaffolder 3.1|Bioimpressão 3D|CNET|4|190,00 p/ hora
+059.023756|Citômetro|Guava (Luminex)|8HT|Citometria de Fluxo|CNET|4|100,00 p/ amostra
+059.004233|Criostato|Leica Reichert|CryoCut|Criomicrotomia|CNET|4|40,00 p/ hora
+200.060395|Determinador de Umidade Termogravimétrico|Ohaus|MB120|Análise Termogravimétrica|CNET|4|30,00 p/ hora
+059.029737|Equipamento para medidas de tempo de vida|OBB|EasyLife V|Espectroscopia de Fluorescência|CNET|4|300,00 p/ sessão
+200.060825|Espectrofotômetro UV-Vis|EDINBURGH INSTRUMENTS|DS5|UV-Vis|CNET|4|10,00 p/ sessão
+N/A|Espectrômetro RAMAN Confocal|HORIBA|RAMAN|Raman Confocal|CNET|4|500,00 p/ hora
+059.007171|Fluorímetro|HORIBA|FL3-P|Espectrofluorometria|CNET|4|20,00 p/ amostra
+200.060826|Homogeneizador de Alta Pressão|MicroFluidics|LM10|Microfluidização|CNET|4|100,00 p/ amostra
+200.036459|Impressora 3D de Filamento|ANET|ET4|Impressão 3D FDM|CNET|4|25,00 p/ hora
+200.036462|Impressora 3D de Resina (SLA)|ELEGOO|Mars|Impressão 3D SLA|CNET|4|45,00 p/ hora
+059.034075|Laser nano-segundo|Quantel|Brillant B|Laser Pulsado|CNET|4|90,00 p/ hora
+200.106518|Leitora de Placa|BIOTEK|GEN|Leitura de Microplacas|CNET|4|25,00 p/ placa
+200.106518|Leitora de Placas|BIOTEK|Cytation 5|Leitura de Microplacas|CNET|4|20,00 p/ sessão
+59.023781|Leitora de gel com luz branca e UV|Cambridge|UVITEC|Fotodocumentação de Géis|CNET|4|10,00 p/ sessão
+059.033884|Liofilizador|VIRTIS|Advantage Pro XL|Liofilização|CNET|4|30,00 p/ sessão
+059.022310|Medidor de Reflectância Difusa|OCEAN OPTICS Inc.|USB2000 FL|Espectroscopia de Reflectância Difusa|CNET|4|10,00 p/ sessão
+200.089863|Microscópio Eletrônico de Varredura|Thermo Fisher|Prisma E|MEV|CNET|4|100,00 p/ hora
+010.017200|Micrótomo de Parafina|RMC|MR3|Microtomia|CNET|4|40,00 p/ hora
+059.029154|Mini Spray Dryer|LabMaq|Mini|Secagem por Atomização|CNET|4|90,00 p/ hora
+200.060396|Mufla com sistema de rampas|Cienlab|MF|Tratamento Térmico|CNET|4|50,00 p/ hora
+059.032894|Nano Spray Dryer|Buchi|B90HP|Secagem por Atomização|CNET|4|90,00 p/ hora
+200.106529|Plataforma Robótica Automática|TECAN|FREEDOM EVO 50|Manipulação de Líquidos|CNET|4|250,00 p/ hora
+059.029153|Reator de síntese de Compostos com controle de pressão|AZ|AZ-300-10|Síntese Química sob Pressão|CNET|4|35,00 p/ sessão
+059.033199|Reator para células e microorganismos|APLLIKON|Z4AEZ0015M|Biorreator|CNET|4|100,00 p/ sessão
+200.082410|Reômetro MCR52|Anton Paar|MCR52|Reometria|CNET|4|150,00 p/ amostra
+010.005991|Sistema de Cromatografia|Shimadzu|LC-10AVP|HPLC|CNET|4|20,00 p/ hora
+059.028182|Sonicador de Ponteira|Sonics|VCX 750|Sonicação|CNET|4|10,00 p/ sessão
+200.106488|Ultracentrífuga|Beckman Coulter|Optima MAX-XP|Ultracentrifugação|CNET|4|600,00 p/ hora
+074.000629|Ultramicrótomo|RMC|MTXL|Ultramicrotomia|CNET|4|200,00 p/ sessão
+010.013916|Vibratomo|Leica|VT1000S|Microtomia Vibratória|CNET|4|50,00 p/ hora
+005.006917|qPCR|CorbettGene|RG 3000|PCR em Tempo Real|CNET|4|150,00 p/ hora
+N/A|Centrífuga|Thermo/Sorvall|ST4R Plus|Centrifugação|CMFAMB|5|0,00 p/ hora
+N/A|Centrífuga de alta velocidade|BECKMAN|AVANTI J-26S XP|Centrifugação de Alta Velocidade|CMFAMB|5|0,00 p/ hora
+059.028184|Coletor Frações|GE Healthcare|Frac-920|Coleta de Frações|CMFAMB|5|50,00 p/ amostra
+N/A|Cromatógrafo Akta|Akta|Pure 25 L|FPLC|CMFAMB|5|0,00 p/ hora
+059.028199|Espectrofotômetro|Thermo Scientific|NanoDrop 2000|UV-Vis de Microvolume|CMFAMB|5|0,00 p/ hora
+059.034268|Espectrofotômetro Leitor Microplacas|Thermo Scientific|Multiskan Go Monocromadora|Leitura de Microplacas|CMFAMB|5|0,00 p/ hora
+059.021105|Espectrômetro de Ressonância Magnética Eletrônica|JEOL|JES-FA200|Ressonância Paramagnética Eletrônica|CMFAMB|5|20,00 p/ hora
+N/A|Fotômetro de massa|ReFeyn|TwoMP|Fotometria de Massa|CMFAMB|5|50,00 p/ hora
+059.009796|Centrífuga refrigerada|Sorvall|5C|Centrifugação Refrigerada|CAQRP|6|25,00 p/ sessão
+059.006092|Centrífuga refrigerada|Sorvall|5C plus|Centrifugação Refrigerada|CAQRP|6|25,00 p/ sessão
+059.025661|Cromatógrafo em fase gasosa acoplado ao Espectrômetro de Massas|AGILENT|7890A|GC-MS|CAQRP|7|300,00 p/ amostra
+059.026881|Cromatógrafo em fase gasosa com detector de ionização por chama|Agilent|7890A|GC-FID|CAQRP|7|200,00 p/ amostra
+060.010314|Luminômetro de placa|Berthold|LB 960|Luminometria de Microplacas|Central BQ|8|50,00 p/ sessão
+059.032433|Espectrômetro de massas - LC|Bruker Daltonics|Amazon Speed|LC-MS|CAQRP|9|180,00 p/ hora
+059.032439|Cromatógrafo em fase líquida (HPLC)|Shimadzu|Nexera XR|HPLC|CAQRP|9|70,00 p/ amostra
+060.004595|Ultracentrífuga|Beckman Coulter|XL 70K|Ultracentrifugação|Central BQ|10|15,00 p/ sessão
+N/A|Espectrômetro de Massas (ICP-MS)|Perkin Elmer|NexIon 5000|ICP-MS|CEMAESP|11|30,00 p/ amostra
+017.040164|Espectrômetro de Ressonância Magnética Nuclear|Bruker|Fourier300|RMN|CRMN300|12|50,00 p/ sessão
+N/A|Sistema cromatográfico|Cytiva|ÄKTA start|FPLC|Central BQ|13|50,00 p/ sessão
+059.017674|Espectrômetro de Dicroísmo Circular|Jasco|J-810|CD|CAQRP|14|90,00 p/ sessão
+059.006290|Espectrofluorímetro|SPEX|N/A|Espectrofluorometria|CAQRP|14|0,00 p/ amostra
+059.014021|Espectrômetro de absorção e emissão atômica|Shimadzu|AA 680|EEA / EAA|CAQRP|15|25,00 p/ elemento
+059.025426|Espectrômetro UV/Vis com FIA|Marte|Spectro 560 Marte|UV-Vis com FIA|CAQRP|15|40,00 p/ hora
+059.033152|Sistema de análise térmica|TA INSTRUMENTS|Q600 SDT|TGA-DSC|CAQRP|16|0,00 p/ amostra
+75.010992|Espectrofotômetro UV-VIS (Duplo-feixe)|BEL Engineering|UV-M90|UV-Vis|CAQRP|17|0,00 p/ amostra
+N/A|Sistema de purificação de água|MilliQ|DIRECT-Q 3 UV SMART|Purificação de Água|CEQIL|18|
+060.009701|Concentrador de amostras|Eppendorf|5301|Centrifugação a Vácuo|CEQIL|18|0,00 p/ hora
+060.017078|Espectrômetro de massas triplo|SCIEX|Nexera-TripleTOF® 5600+|LC-QTOF|CEQIL|18|250,00 p/ amostra
+060.009743|Sistema de cromatografia líquida de alta performance UV-Vis|SHIMADZU|PROMINENCE|HPLC-UV|CEQIL|18|100,00 p/ sessão
+060.002669|Espectrofotômetro de fluorescência|Hitachi|F-4500|Espectrofluorometria|Central BQ|19|20,00 p/ hora
+060.016242|Oxígrafo de alta resolução|Oroboros|O2k|Respirometria de Alta Resolução|Central BQ|19|40,00 p/ sessão
+059.032205|Espectrometria de Massas para Produtos Naturais|Waters Corporation|UPLC ACQUITY HClass|UPLC-MS|LabMass|20|200,00 p/ amostra
+059.029874|Cromatógrafo em fase líquida acoplado a detector DAD|Thermo - Dionex Softron|Ultimate LPG-3400SD|HPLC-DAD|CAQRP|21|80,00 p/ amostra
+059.029873|Potenciostato monocanal|Metrohm|Autolab AUT128N|Eletroquímica|CAQRP|21|80,00 p/ amostra
+060.005444|Sistema de Dissolução|Hanson Research|SR8Plus|Ensaio de Dissolução|LIAREC|22|2.800,00 p/ análise
+N/A|Microscópio de Força Atômica|NANOSURF AG|FlexAFM|AFM|LIAREC|22|0,00 p/ hora
+200.071411|Aparelho de raio-X|BALTOGRAPH|BALTOGRAPH XSD160|Radiografia|CMFAMB|23|80,00 p/ hora
+059.032696|Aparelho de raio-X|GE SENSING|GE SENSING ISOVOLT TITAN|Radiometria|CMFAMB|23|80,00 p/ hora
+200.024656|Detector de radiação|MRA|26-1|Radiometria|CMFAMB|23|200,00 p/ equipamento
+060.016528|Criostato|Leica|CM1860|Criomicrotomia|CEMMO|24|50,00 p/ hora
+060.008920|Cromatógrafo de gases com espectrometria de massas|Shimadzu|QP2010|GC-MS|CEMMO|24|90,00 p/ amostra
+N/A|HPLC preparativo|Shimadzu|LC-20AP|HPLC Preparativo|CEMMO|24|30,00 p/ hora
+N/A|Espectrômetro de massas|Shimadzu|LCMS9050|LC-MS|CEMMO|24|150,00 p/ amostra
+060.012986|Espectrômetro de massas MicrOTOF QII|Bruker Daltonics|micrOTOF-QII|LC-QTOF|CEMMO|24|150,00 p/ amostra
+059.004760|Sistema de Cromatografia|Shimadzu|SCL-10ADVP|HPLC|CAQRP|25|25,00 p/ amostra
+059.006249|Espectrômetro de Ressonância Magnética Nuclear (RMN)|Bruker|DRX500|RMN|CAQRP|25|50,00 p/ sessão
+N/A|Espectrômetro de Ressonância Magnética Nuclear (RMN)|Bruker|Avance 400 - Ultra Shield|RMN|CAQRP|25|40,00 p/ hora
+059.032861|Difratômetro de Raios X (DRX)|Bruker AXS|D2 Phaser|DRX|CAQRP|26|50,00 p/ hora
+059.007740|Sistema de Cromatografia|Shimadzu|SCL-10AVP|HPLC|CAQRP|26|50,00 p/ amostra
+059.019287|Analisador Bioquímico|HACH|BODTRAK|DBO|CAQRP|26|20,00 p/ amostra
+059.028031|Estação de testes de Célula a Combustível|Fuel Cell Technologies|FCT-TS-1|Caracterização de Células a Combustível|CAQRP|26|50,00 p/ hora
+059.018604|Sistema Calorímetro|CALORIMETRY|NANO DSC - Série II|Nano-DSC|CAQRP|27|100,00 p/ amostra
+059.032039|Leitor de microplaca Molecular|Molecular Devices|SpectraMax M3|Leitura de Microplacas Multimodal|CAQRP|27|50,00 p/ placa
+059.018499|Ultracentrífuga|Hitachi|CP70MX|Ultracentrifugação|CAQRP|27|50,00 p/ sessão
+059.003943|Centrífuga refrigerada|Sorvall|5C|Centrifugação Refrigerada|CAQRP|27|25,00 p/ sessão
+059.018369|Sistema de Cromatografia de baixa Pressão|AMERSHAM|AKTA|FPLC|CAQRP|27|500,00 p/ sessão
+N/A|UPLC-PDA-Massas|Waters Corporation|Acquity UPLC H-Class|UPLC-PDA-MS|LIAREC|28|100,00 p/ hora
+059.007859|Espectrômetro de Dicroísmo Circular|Jasco|810-150S|CD|CAQRP|29|90,00 p/ sessão
+059.028006|Estação p/ seleção de colônias|Kbiosystems|K62|Seleção Automatizada de Colônias|CAQRP|29|200,00 p/ sessão
+059.028005|Leitor de Placa Molecular|Molecular Devices|Stakmax|Automação / Manipulação de Microplacas|CAQRP|29|50,00 p/ placa
+059.018150|Leitor de microplaca Molecular|Molecular Devices|VERSAMAX T4.0A|Espectrofotometria de Microplacas|CAQRP|29|50,00 p/ placa
+059.018344|Metalização com Ouro e/ou Recobrimento com Carbono para MEV/EDS|BAL TEC|SCD 050 Sputter Coater|Metalização / Recobrimento de Amostras|CAQRP|30|50,00 p/ processo
+059.015974|Microscopia de Força Atômica|SHIMADZU|SPM-9600|AFM|CAQRP|31|200,00 p/ amostra
+059.015974|Microscópio Eletrônico de Varredura|SHIMADZU|SS-550|MEV|CAQRP|31|50,00 p/ hora
+060.012052|Sistema de Eletroforese Capilar|Agilent Technologies|2100|Eletroforese Capilar|LMSeq|32|500,00 p/ serviço
+200030311|Sistema de Cromatografia Líquida de Alta Eficiência|Shimadzu|LC-20A|HPLC|PuSeSin|33|90,00 p/ sessão
+60.016.951|Sintetizador de peptídeos|Protein Technologies|PS3™|Síntese de Peptídeos|PuSeSin|33|300,00 p/ sessão
+200030318|Sequenciador de proteínas|Shimadzu|PPSQ-53A|Sequenciamento de Proteínas|PuSeSin|33|40,00 p/ ciclo
+059.011052|Fotômetro de chama|Micronal|B 262|Fotometria de Chama|CAQRP|34|20,00 p/ elemento
+059.031996|Titulador Karl Fisher Coulométrico|Karl Fisher|Coulométrico NP|Titulação Karl Fischer|CAQRP|34|15,00 p/ amostra
+059.019660|Potenciostato|METROHM|TYPE III AUTOLAB|Eletroquímica|CAQRP|34|40,00 p/ hora
+059.021078|Cromatógrafo em fase gasosa|Shimadzu|GC 2010|GC|CAQRP|34|25,00 p/ amostra`
+.split("\n").map(l=>{const a=l.split("|");return{pat:a[0],nome:a[1],marca:a[2],modelo:a[3],cls:a[4],local:a[5],resp:R[+a[6]],valor:a[7]?"R$ "+a[7]:"Sob consulta"}});
+const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+D.forEach(d=>d.k=norm([d.pat,d.nome,d.marca,d.modelo,d.cls,d.local,d.resp,d.valor].join(" ")));
+const $=id=>document.getElementById(id);
+let loc="";
+const T=[["Cromatografia",/cromatogr|hplc|uflc|uplc|fplc|\bgc\b|gc-|\bic\b|lc-|akta|fracoes/],
+["Espectrometria de massas",/massas|\bms\b|-ms\b|icp|qtof/],
+["Espectroscopia",/espectrof|espectrosc|fluorim|fluorom|raman|uv-vis|rmn|ressonancia|dicroismo|reflectancia|fotometr|luminom|leitor|leitura|absorcao|fluorescencia/],
+["Eletroquímica",/eletroquim|potenciostato|combustivel/],
+["Microscopia",/microscop|\bmev\b|\bafm\b|sputter|metalizacao|\bbam\b/],
+["Centrifugação",/centrifug/],
+["Análise térmica e reologia",/termogr|\btga|dsc|calorim|reometr|umidade|karl|tratamento termico/],
+["Partículas e superfícies",/zeta|\bdls\b|trps|tamanho de particulas|tensiom|langmuir/],
+["Raios X e radiação",/raio-x|\bdrx\b|radiometria|radiografia|radiacao/]];
+D.forEach(d=>{const n=norm(d.nome+" "+d.cls+" "+d.modelo);d.tec=T.filter(t=>t[1].test(n)).map(t=>t[0]);if(!d.tec.length)d.tec=["Outras técnicas"];d.k+=" "+norm(d.tec.join(" "))});
+const tecs=[...T.map(t=>t[0]),"Outras técnicas"];
+function chips(){$("chips").innerHTML=["Todas",...tecs].map(l=>`<button class="chip ${(l==="Todas"?"":l)===loc?"on":""}" data-l="${l==="Todas"?"":l}">${l}</button>`).join("")}
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function render(){
+const t=norm($("q").value).split(/\s+/).filter(Boolean);
+const r=D.filter(d=>(!loc||d.tec.includes(loc))&&t.every(x=>d.k.includes(x)));
+$("count").textContent=r.length+(r.length===1?" equipamento encontrado":" equipamentos encontrados");
+$("grid").innerHTML=r.length?r.map(d=>`<article class="card"><h2>${esc(d.nome)}</h2><div class="m">${esc(d.marca)} · ${esc(d.modelo)}</div><div class="tags"><span class="tag y">${esc(d.cls)}</span><span class="tag" style="background:var(--c);color:var(--b)">${esc(d.tec[0])}</span><span class="tag">${esc(d.local)}</span></div><div class="row"><b>Responsável:</b> ${esc(d.resp)}</div><div class="row"><b>Patrimônio:</b> ${esc(d.pat)}</div><div class="price">${esc(d.valor)}</div></article>`).join(""):'<div class="empty" style="grid-column:1/-1">Nenhum equipamento encontrado. Tente outro termo.</div>';
+}
+$("q").addEventListener("input",render);
+$("clr").onclick=()=>{$("q").value="";loc="";chips();render();$("q").focus()};
+$("chips").onclick=e=>{if(e.target.dataset.l!==undefined){loc=e.target.dataset.l;chips();render()}};
+chips();render();
+</script>
+</body>
+</html>
