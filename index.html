@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<title>Pesquisa de Equipamentos | Soluções Químicas Jr.</title>
+<title>Base de dados | Soluções Químicas Jr.</title>
+<meta property="og:title" content="Base de dados | Soluções Químicas Jr.">
+<meta property="og:type" content="website">
 <style>
 :root{--y:#F7B733;--c:#FDF6EC;--b:#04124F}
 *{box-sizing:border-box;margin:0}
@@ -246,7 +248,7 @@ $("rclr").onclick=()=>{$("rq").value="";rrender();$("rq").focus()};
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
 document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));
 const re=b.dataset.t==="re";$("eq").hidden=re;$("re").hidden=!re;
-$("ttl").textContent=re?"REAGENTES":"EQUIPAMENTOS";document.title="Pesquisa de "+(re?"Reagentes":"Equipamentos")+" | Soluções Químicas Jr."});
+$("ttl").textContent=re?"REAGENTES":"EQUIPAMENTOS"});
 rrender();
 </script>
 </body>
